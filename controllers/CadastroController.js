@@ -2,8 +2,6 @@ const infoCadastro = require("../models/Cadastro");
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 
-//const {emailVal , senhaVal} = require("../middlewares/MidCadas");
-//const { validationResult } = require("express-validator");
 const cadastroController = {
     
         login: async (req, res) => {
@@ -30,33 +28,43 @@ const cadastroController = {
             }
         },
 
+        createAdmin: async(req, res) => {
+
+            if (!req.user.admin) return req.body.admin = false
+            const cadastro = new infoCadastro({
+                id: req.params.id,
+                email: req.body.email,
+                admin: req.body.admin,
+                senha: await bcrypt.hash(req.body.senha, 10)
+            })
+
+            const cadastroAdminPost = await infoCadastro.create(cadastro)
+            cadastroAdminPost.save();
+
+            return res.status(201).json({ userAdmin: cadastro })
+
+
+
+        },
+
         create: async(req, res) => {
             try {
                 
-                //const CadasVal = validationResult(req)
+                
+               //if (!req.user.admin) return req.body?.admin = false
+               
                 const cadastro = new infoCadastro({
                     id: req.params.id,
                     email: req.body.email,
-                    admin: req.body.admin,
-                    senha: await bcrypt.hash(req.body.senha, 10),
+                    admin: false,
+                    senha: await bcrypt.hash(req.body.senha, 10)
                     
                 })
 
-                // const generateTokenPerId = jwt.sign({id: cadastro.id}, '123', {
-                //     expiresIn: 300,
-                // } )
-                // console.log('token: ', generateTokenPerId);
-
-            
-        
-                
-               
-      
-                       // const token = new jwt.sign({id: 1}, SECRET, { expiresIn: 300 })
-                       // res.json({auth: true, token});
-
                 const cadastroPost = await infoCadastro.create(cadastro);
-                cadastroPost.save();
+                cadastroPost.save();// if(!req.user.admin && req.params.id !== req.user.id) {
+                    //     return res.status(403).json({ message: ''})
+                    // }
                 return res.status(201).json({user: cadastro });
                 
             } catch (error) {
@@ -94,6 +102,9 @@ const cadastroController = {
     
         delete: async(req, res) => {
             try {
+                // if(!req.user.admin && req.params.id !== req.user.id) {
+                //     return res.status(403).json({ message: ''})
+                // }
                const cadastroDel = await infoCadastro.findByIdAndRemove(req.params.id)
                res.send(cadastroDel);
     
@@ -104,6 +115,7 @@ const cadastroController = {
     
         put: async (req, res) => {
             try {
+                if(!req.user.admin) req.params.id = req.user.id
                const cadastroPut = await infoCadastro.findByIdAndUpdate(req.params.id, {
                 email: req.body.email,
                 senha: await bcrypt.hash(req.body.senha, 10),

@@ -25,6 +25,6 @@ app.get('/api', (req,res) => {
     res.json({msg:'API is Running on port 3330'})
 })
 
-app.listen(process.env.PORT || 3333, () => {
+app.listen(process.env.PORT || 3330, () => {
     console.log("Servidor Online!");
 });

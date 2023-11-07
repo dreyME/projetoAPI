@@ -3,10 +3,21 @@ const {body, param, validationResult} = require('express-validator')
 const Cadastro = require("../models/Cadastro")
 const jwt = require('jsonwebtoken');
 
+exports.valDelete = (req, res, next) => {
+  if(!req.user.admin && req.params.id !== req.user.id){
+    return res.status(403).json( { msg: 'Você só pode deletar usuários se você for um admin, ou se a conta for sua!!'} )
+  }
+}
 
 exports.loginValidate = [
     body('email').isEmail().notEmpty(),
     body('senha').isStrongPassword()
+]
+
+exports.adminValidate = [
+  body('email').isEmail().notEmpty(),
+  body('senha').isStrongPassword(),
+  body('admin').isBoolean().withMessage('Apenas aceita se o valor for booleano')
 ]
 
 exports.loginValidateID = [
