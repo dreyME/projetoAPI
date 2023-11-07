@@ -31,6 +31,7 @@ const cadastroController = {
         createAdmin: async(req, res) => {
 
             if (!req.user.admin) return req.body.admin = false
+
             const cadastro = new infoCadastro({
                 id: req.params.id,
                 email: req.body.email,
@@ -102,9 +103,11 @@ const cadastroController = {
     
         delete: async(req, res) => {
             try {
-                // if(!req.user.admin && req.params.id !== req.user.id) {
-                //     return res.status(403).json({ message: ''})
-                // }
+                //if(cadastroDel.email === "AdminDefault@gmail.com") return res.status(401).json({ msg: "Você não pode apagar a conta Padrão do Admin!!"  })
+                const user = await infoCadastro.findOne({_id: req.params.id})
+
+                if(user.email === "AdminDefault@gmail.com") return res.status(401).json({ msg: "Você não pode apagar a conta Padrão do Admin!!"})
+
                const cadastroDel = await infoCadastro.findByIdAndRemove(req.params.id)
                res.send(cadastroDel);
     
@@ -112,16 +115,36 @@ const cadastroController = {
                 console.log(error);
             }
         },
+
     
         put: async (req, res) => {
             try {
-                if(!req.user.admin) req.params.id = req.user.id
+                //if(!req.user.admin === true) req.params.id = req.user.id 
+
+            if(!req.user.admin === true){
+               req.params.id = req.user.id 
+
                const cadastroPut = await infoCadastro.findByIdAndUpdate(req.params.id, {
                 email: req.body.email,
                 senha: await bcrypt.hash(req.body.senha, 10),
                })
                res.send(cadastroPut);
-    
+
+            } else {
+                const user = await infoCadastro.findOne({_id: req.params.id})
+
+                if(user.email === "AdminDefault@gmail.com") return res.status(401).json({ msg: "Você não pode atualizar a conta Padrão do Admin!!"})
+                
+                const cadastroPut = await infoCadastro.findByIdAndUpdate(req.params.id, {
+                    email: req.body.email,
+                    senha: await bcrypt.hash(req.body.senha, 10),
+                    admin: req.body.admin
+                   })
+                   res.send(cadastroPut);
+            }
+            
+            
+
             } catch (error) {
                 console.log(error);
             }
