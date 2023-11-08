@@ -14,9 +14,10 @@ const CadastroSchema = new Schema({
         required: true
     },
     admin:{
-        
         type: Boolean,
-        
+    },
+    owner:{   
+        type: Boolean
     }
 },
     {

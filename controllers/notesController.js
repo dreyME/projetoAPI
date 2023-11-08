@@ -27,7 +27,6 @@ const notesController = {
             let query = {user_id: req.user.id}
             //esse eu alterei também
             if (req.query?.option) query = {...query, option: req.query.option }
-            console.log('req.query', req.query)
            const noteGet = await infoNote.find(query)
            res.send(noteGet)
 

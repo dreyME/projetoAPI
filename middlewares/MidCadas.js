@@ -6,8 +6,8 @@ const jwt = require('jsonwebtoken');
 
 exports.valDelete = (req, res, next) => {
 
-  if(!req.user.admin === true && req.params.id !== req.user.id){
-    return res.status(403).json( { msg: 'Você só pode deletar usuários se você for um admin, ou se a conta for sua!!'} )
+  if(!req.user.owner === true && !req.user.admin === true && req.params.id !== req.user.id){
+    return res.status(403).json( { msg: 'Você só pode deletar usuários se você for um proprietário, um Admin, ou se a conta for sua!!'} )
   } else return next()
   
 }
@@ -21,6 +21,13 @@ exports.adminValidate = [
   body('email').isEmail().notEmpty(),
   body('senha').isStrongPassword(),
   body('admin').isBoolean().withMessage('Apenas aceita se o valor for booleano')
+]
+
+exports.ownerValidate = [
+  body('email').isEmail().notEmpty(),
+  body('senha').isStrongPassword(),
+  body('admin').isBoolean().withMessage('Apenas aceita se o valor for booleano'),
+  body('owner').isBoolean().withMessage('Owner ta dando BO')
 ]
 
 exports.loginValidateID = [

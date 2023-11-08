@@ -9,6 +9,14 @@ router
     .route('/authenticate')
     .post(CadasVal.loginValidate, CadasVal.ValidateCad, cadastroController.login)
 
+//rota do proprietário(owner) e seus métodos
+router
+    .route("/user/owner")
+    .post(MiddlewareAuthenticate.authenticate, CadasVal.ownerValidate, CadasVal.ValidateCad, CadasVal.validateNotDuplicated, cadastroController.createOwner)
+    .get(MiddlewareAuthenticate.authenticate, cadastroController.find);
+    
+
+
 
 //rota do administrador e seus métodos
 router

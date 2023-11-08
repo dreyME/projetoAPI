@@ -19,16 +19,63 @@ const cadastroController = {
                 return res.status(400).json({msg: 'Senha Inválida'})
             }
 
-            const token = jwt.sign({ id: user.id, admin: user.admin }, 'abc', { expiresIn: 3000 })
+            const token = jwt.sign({ id: user.id, admin: user.admin , owner: user.owner}, 'abc', { expiresIn: 3000 })
             return res.status(200).json({ token, user })
 
 
             } catch (error) {
-            res.status(500).json({ msg: error.message })
+                res.status(500).json({ msg: error.message })
+                console.log(error)
             }
         },
 
+        createOwner: async(req, res) => {
+
+            try {
+                if (!req.user.owner === true) {
+                //req.body.owner = false
+                const cadastro = new infoCadastro({
+                    id: req.params.id,
+                    email: req.body.email,
+                    admin: req.body.admin,
+                    owner: false,
+                    senha: await bcrypt.hash(req.body.senha, 10)
+                })
+                
+                const cadastroOwnerPost = await infoCadastro.create(cadastro)
+                cadastroOwnerPost.save();
+    
+                return res.status(201).json({ userAdmin: cadastro })
+            } else {
+                const cadastro = new infoCadastro({
+                    id: req.params.id,
+                    email: req.body.email,
+                    admin: req.body.admin,
+                    owner: req.body.owner,
+                    senha: await bcrypt.hash(req.body.senha, 10)
+                })
+
+                const cadastroOwnerPost = await infoCadastro.create(cadastro)
+                cadastroOwnerPost.save();
+    
+                return res.status(201).json({ userAdmin: cadastro })
+            }
+    
+               
+    
+            } catch (error) {
+                res.status(500).json({ error: error.message});
+                console.log(error)
+            }
+                
+    
+    
+    
+            },
+
         createAdmin: async(req, res) => {
+
+        try {
 
             if (!req.user.admin) return req.body.admin = false
 
@@ -36,6 +83,7 @@ const cadastroController = {
                 id: req.params.id,
                 email: req.body.email,
                 admin: req.body.admin,
+                owner: false,
                 senha: await bcrypt.hash(req.body.senha, 10)
             })
 
@@ -44,28 +92,31 @@ const cadastroController = {
 
             return res.status(201).json({ userAdmin: cadastro })
 
+        } catch (error) {
+            res.status(500).json({ error: error.message});
+            console.log(error)
+        }
+            
+
 
 
         },
 
         create: async(req, res) => {
             try {
-                
-                
-               //if (!req.user.admin) return req.body?.admin = false
                
                 const cadastro = new infoCadastro({
                     id: req.params.id,
                     email: req.body.email,
                     admin: false,
+                    owner: false,
                     senha: await bcrypt.hash(req.body.senha, 10)
                     
                 })
 
                 const cadastroPost = await infoCadastro.create(cadastro);
-                cadastroPost.save();// if(!req.user.admin && req.params.id !== req.user.id) {
-                    //     return res.status(403).json({ message: ''})
-                    // }
+                cadastroPost.save();
+
                 return res.status(201).json({user: cadastro });
                 
             } catch (error) {
@@ -76,8 +127,8 @@ const cadastroController = {
     
         find: async(req, res) => {
             try {
-                const { admin } = req.user
-                if(admin === true){
+                const { admin, owner } = req.user
+                if(admin === true || owner === true){
                     const cadastroGet = await infoCadastro.find()
                     return res.send(cadastroGet)
                 } else{
@@ -86,7 +137,8 @@ const cadastroController = {
                 }
 
             } catch (error) {
-                console.log(error);
+                res.status(500).json({ error: error.message});
+                console.log(error)
             }
         },
 
@@ -96,7 +148,8 @@ const cadastroController = {
                res.send(cadastroGet)
     
             } catch (error) {
-                console.log(error);
+                res.status(500).json({ error: error.message});
+                console.log(error)
             }
         },
     
@@ -106,13 +159,14 @@ const cadastroController = {
                 //if(cadastroDel.email === "AdminDefault@gmail.com") return res.status(401).json({ msg: "Você não pode apagar a conta Padrão do Admin!!"  })
                 const user = await infoCadastro.findOne({_id: req.params.id})
 
-                if(user.email === "AdminDefault@gmail.com") return res.status(401).json({ msg: "Você não pode apagar a conta Padrão do Admin!!"})
+                if(user.owner === true) return res.status(401).json({ msg: "Você não pode apagar uma conta Owner(Proprietária) sem ser um proprietário!!"})
 
                const cadastroDel = await infoCadastro.findByIdAndRemove(req.params.id)
                res.send(cadastroDel);
     
             } catch (error) {
-                console.log(error);
+                res.status(500).json({ error: error.message});
+                console.log(error)
             }
         },
 
@@ -122,6 +176,7 @@ const cadastroController = {
                 //if(!req.user.admin === true) req.params.id = req.user.id 
 
             if(!req.user.admin === true){
+
                req.params.id = req.user.id 
 
                const cadastroPut = await infoCadastro.findByIdAndUpdate(req.params.id, {
@@ -133,7 +188,7 @@ const cadastroController = {
             } else {
                 const user = await infoCadastro.findOne({_id: req.params.id})
 
-                if(user.email === "AdminDefault@gmail.com") return res.status(401).json({ msg: "Você não pode atualizar a conta Padrão do Admin!!"})
+                if(user.owner === true) return res.status(401).json({ msg: "Você não pode atualizar a conta Padrão do Admin!!"})
                 
                 const cadastroPut = await infoCadastro.findByIdAndUpdate(req.params.id, {
                     email: req.body.email,
@@ -143,9 +198,13 @@ const cadastroController = {
                    res.send(cadastroPut);
             }
             
+
+            //CRIAR UM IF DEPOIS DESSE ELSE AÍ DE CIMA
+            
             
 
             } catch (error) {
+                res.status(500).json({ error: error.message })
                 console.log(error);
             }
         }
