@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "primeiroProjeto",
   "main": "app.js",
-  "script": {
-    "start": "node app.js"
+  "scripts": {
+    "start": "node app.js",
+    "seed": "node seed.js"
   },
   "repository": {
     "type": "git",

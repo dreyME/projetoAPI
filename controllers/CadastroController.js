@@ -8,13 +8,22 @@ const cadastroController = {
 
             
             try{
-                const { email, senha } = req.body
+                let { senha } = req.body
+                let { email } = req.body
+                
+                
+                if (email && typeof email === 'string') {
+                    email = email.toLowerCase();
+                  }
+
+                
                 const user = await infoCadastro.findOne({ email })
-               
+
+                if (!user) return res.status(400).json({ message: 'Usuário ou senha estão incorretos!' })
+
                 const passwordIsValid = await bcrypt.compare(senha, user.senha)
                
-            if (!user) return res.status(400).json({ message: 'Usuário ou senha estão incorretos!' })
-
+           
             if(!passwordIsValid){
                 return res.status(400).json({msg: 'Senha Inválida'})
             }
@@ -158,12 +167,22 @@ const cadastroController = {
             try {
                 //if(cadastroDel.email === "AdminDefault@gmail.com") return res.status(401).json({ msg: "Você não pode apagar a conta Padrão do Admin!!"  })
                 const user = await infoCadastro.findOne({_id: req.params.id})
+                const userID = await infoCadastro.findOne({ _id: req.user.id })
 
-                if(user.owner === true) return res.status(401).json({ msg: "Você não pode apagar uma conta Owner(Proprietária) sem ser um proprietário!!"})
+                if (userID.owner === true){
+
+                    const cadastroDel = await infoCadastro.findByIdAndRemove(req.params.id)
+                    res.send(cadastroDel);
+
+                } else {
+
+                if(user.admin === true) return res.status(401).json({ msg: "Você não pode apagar uma conta Admin sem ser um proprietário!!"})
 
                const cadastroDel = await infoCadastro.findByIdAndRemove(req.params.id)
                res.send(cadastroDel);
-    
+
+            }
+
             } catch (error) {
                 res.status(500).json({ error: error.message});
                 console.log(error)
@@ -175,28 +194,61 @@ const cadastroController = {
             try {
                 //if(!req.user.admin === true) req.params.id = req.user.id 
 
-            if(!req.user.admin === true){
-
+            if(!req.user.admin === true && !req.user.owner === true){
+            
                req.params.id = req.user.id 
 
+               
+               
+               let { email } = req.body
+
+               email = email.toLowerCase();
+
+
                const cadastroPut = await infoCadastro.findByIdAndUpdate(req.params.id, {
-                email: req.body.email,
+                email: email,
                 senha: await bcrypt.hash(req.body.senha, 10),
                })
                res.send(cadastroPut);
 
             } else {
-                const user = await infoCadastro.findOne({_id: req.params.id})
+                const user = await infoCadastro.findOne({ _id: req.params.id })
+                const userID = await infoCadastro.findOne({ _id: req.user.id })
 
-                if(user.owner === true) return res.status(401).json({ msg: "Você não pode atualizar a conta Padrão do Admin!!"})
+
+                if (userID.owner === true){
+
+                    let { email } = req.body
+                    email = email.toLowerCase()
+    
+                    const cadastroPut = await infoCadastro.findByIdAndUpdate(req.params.id, {
+                        email: email,
+                        senha: await bcrypt.hash(req.body.senha, 10),
+                        admin: req.body.admin,
+                        owner: req.body.owner
+                       })
+                      return res.send(cadastroPut);
+
+                }
                 
+                
+                if(user.owner === true) return res.status(401).json({ msg: "Você não pode atualizar uma conta Owner(Proprietária) sem ser um proprietário!!"})
+                else{
+
+                    if(user.admin === true) return res.status(401).json({ msg: "Você não pode atualizar uma conta Admin sem ser um proprietário!!"})
+                    let { email } = req.body
+                    email = email.toLowerCase()
+
                 const cadastroPut = await infoCadastro.findByIdAndUpdate(req.params.id, {
-                    email: req.body.email,
+                    email: email,
                     senha: await bcrypt.hash(req.body.senha, 10),
-                    admin: req.body.admin
+                    admin: false,
+                    owner: false,
                    })
                    res.send(cadastroPut);
+                }
             }
+        
             
 
             //CRIAR UM IF DEPOIS DESSE ELSE AÍ DE CIMA
