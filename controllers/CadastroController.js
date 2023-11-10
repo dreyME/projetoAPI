@@ -41,7 +41,7 @@ const cadastroController = {
         createOwner: async(req, res) => {
 
             try {
-                if (!req.user.owner === true) {
+                if (!req.user.owner === true && req.user.admin === true) {
                 //req.body.owner = false
                 const cadastro = new infoCadastro({
                     id: req.params.id,
