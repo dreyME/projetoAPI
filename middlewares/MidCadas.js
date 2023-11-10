@@ -10,10 +10,10 @@ exports.valDelete = (req, res, next) => {
     return res.status(401).json( { msg: 'Você só pode deletar usuários se você for um Proprietário, um Admin, ou se a conta for sua!!'} )
 
 
-  } else if(!req.user.owner === true && req.user.admin === true && req.body.admin === true) {
+  } else if(!req.user.owner === true && req.user.admin === true && req.params.id !== req.user.id) {
     return res.status(403).json({ msg: 'Você só pode deletar um Admin se você for um Proprietário! '}) 
 
-  } else return next()
+  } return next()
   
   
 }

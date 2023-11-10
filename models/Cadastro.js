@@ -14,6 +14,9 @@ const CadastroSchema = new Schema({
         type: String,
         required: true
     },
+    cnfsenha:{
+        type: String,
+    },
     admin:{
         type: Boolean,
     },

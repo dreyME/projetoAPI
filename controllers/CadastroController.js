@@ -41,21 +41,11 @@ const cadastroController = {
         createOwner: async(req, res) => {
 
             try {
-                if (!req.user.owner === true && req.user.admin === true) {
-                //req.body.owner = false
-                const cadastro = new infoCadastro({
-                    id: req.params.id,
-                    email: req.body.email,
-                    admin: req.body.admin,
-                    owner: false,
-                    senha: await bcrypt.hash(req.body.senha, 10)
-                })
-                
-                const cadastroOwnerPost = await infoCadastro.create(cadastro)
-                cadastroOwnerPost.save();
-    
-                return res.status(201).json({ userAdmin: cadastro })
-            } else {
+
+                if(!req.user.owner === true) return res.status(401).json({ msg:"Você não tem permissão para realizar esta ação" })
+
+                if(req.body.cnfsenha != req.body.senha) return res.status(400).json({ msg: 'As senhas não coincidem!!' })
+                    
                 const cadastro = new infoCadastro({
                     id: req.params.id,
                     email: req.body.email,
@@ -68,10 +58,7 @@ const cadastroController = {
                 cadastroOwnerPost.save();
     
                 return res.status(201).json({ userAdmin: cadastro })
-            }
-    
-               
-    
+
             } catch (error) {
                 res.status(500).json({ error: error.message});
                 console.log(error)
@@ -86,7 +73,33 @@ const cadastroController = {
 
         try {
 
-            if (!req.user.admin) return req.body.admin = false
+            if (req.user.owner === true) {
+
+                if(req.body.cnfsenha != req.body.senha){
+                    return res.status(400).json({ msg: 'As senhas não coincidem!! ' })
+                }
+    
+                const cadastro = new infoCadastro({
+                    id: req.params.id,
+                    email: req.body.email,
+                    admin: req.body.admin,
+                    owner: req.body.owner,
+                    senha: await bcrypt.hash(req.body.senha, 10)
+                })
+    
+                const cadastroAdminPost = await infoCadastro.create(cadastro)
+                cadastroAdminPost.save();
+    
+                return res.status(201).json({ userAdmin: cadastro })
+
+            } else {
+
+            if(!req.user.admin === true) return res.status(401).json({ msg: "Você não tem permissão para realizar esta ação" })
+
+
+            if(req.body.cnfsenha != req.body.senha){
+                return res.status(400).json({ msg: 'As senhas não coincidem!! ' })
+            }
 
             const cadastro = new infoCadastro({
                 id: req.params.id,
@@ -100,6 +113,7 @@ const cadastroController = {
             cadastroAdminPost.save();
 
             return res.status(201).json({ userAdmin: cadastro })
+            }
 
         } catch (error) {
             res.status(500).json({ error: error.message});
@@ -114,6 +128,10 @@ const cadastroController = {
         create: async(req, res) => {
             try {
                
+                if(req.body.cnfsenha != req.body.senha){
+                    return res.status(400).json({ msg: 'As senhas não coincidem!! ' })
+                }
+
                 const cadastro = new infoCadastro({
                     id: req.params.id,
                     email: req.body.email,
@@ -166,22 +184,23 @@ const cadastroController = {
         delete: async(req, res) => {
             try {
                 //if(cadastroDel.email === "AdminDefault@gmail.com") return res.status(401).json({ msg: "Você não pode apagar a conta Padrão do Admin!!"  })
-                const user = await infoCadastro.findOne({_id: req.params.id})
-                const userID = await infoCadastro.findOne({ _id: req.user.id })
+               // const user = await infoCadastro.findOne({_id: req.params.id})
+                //const userID = await infoCadastro.findOne({ _id: req.user.id })
 
-                if (userID.owner === true){
+                // if (userID.owner === true){
 
-                    const cadastroDel = await infoCadastro.findByIdAndRemove(req.params.id)
-                    res.send(cadastroDel);
+                //     const cadastroDel = await infoCadastro.findByIdAndRemove(req.params.id)
+                //     res.send(cadastroDel);
 
-                } else {
+                // } else {
 
-                if(user.admin === true) return res.status(401).json({ msg: "Você não pode apagar uma conta Admin sem ser um proprietário!!"})
+                // if(user.admin === true) return res.status(401).json({ msg: "Você não pode apagar uma conta Admin sem ser um proprietário!!"})
+
 
                const cadastroDel = await infoCadastro.findByIdAndRemove(req.params.id)
                res.send(cadastroDel);
 
-            }
+            
 
             } catch (error) {
                 res.status(500).json({ error: error.message});
@@ -233,6 +252,7 @@ const cadastroController = {
                 
                 
                 if(user.owner === true) return res.status(401).json({ msg: "Você não pode atualizar uma conta Owner(Proprietária) sem ser um proprietário!!"})
+                
                 else{
 
                     if(user.admin === true) return res.status(401).json({ msg: "Você não pode atualizar uma conta Admin sem ser um proprietário!!"})
