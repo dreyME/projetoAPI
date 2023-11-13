@@ -1,9 +1,7 @@
 const express = require ("express");
 const cors = require('cors')
 const app = express();
-const port = 3333
-//const { body, param, validationResult } = require("express-validator")
-//const {emailVal , senhaVal} = require("../middlewares/MidCadas");
+const port = 3330
 
 app.use(cors());
 
@@ -25,6 +23,6 @@ app.get('/api', (req,res) => {
     res.json({msg:'API is Running on port 3330'})
 })
 
-app.listen(process.env.PORT || 3330, () => {
+app.listen(port || 3333, () => {
     console.log("Servidor Online!");
 });

@@ -104,8 +104,6 @@ const cadastroController = {
             const cadastro = new infoCadastro({
                 id: req.params.id,
                 email: req.body.email,
-                admin: req.body.admin,
-                owner: false,
                 senha: await bcrypt.hash(req.body.senha, 10)
             })
 
@@ -135,8 +133,6 @@ const cadastroController = {
                 const cadastro = new infoCadastro({
                     id: req.params.id,
                     email: req.body.email,
-                    admin: false,
-                    owner: false,
                     senha: await bcrypt.hash(req.body.senha, 10)
                     
                 })
@@ -158,7 +154,7 @@ const cadastroController = {
                 if(admin === true || owner === true){
                     const cadastroGet = await infoCadastro.find()
                     return res.send(cadastroGet)
-                } else{
+                } else {
                const cadastroGet = await infoCadastro.find({_id: req.user.id}, {senha : 0})
                return res.send(cadastroGet)
                 }
@@ -183,22 +179,26 @@ const cadastroController = {
     
         delete: async(req, res) => {
             try {
-                //if(cadastroDel.email === "AdminDefault@gmail.com") return res.status(401).json({ msg: "Você não pode apagar a conta Padrão do Admin!!"  })
-               // const user = await infoCadastro.findOne({_id: req.params.id})
-                //const userID = await infoCadastro.findOne({ _id: req.user.id })
+                
+                const user = await infoCadastro.findOne({_id: req.params.id})
+                const userID = await infoCadastro.findOne({ _id: req.user.id })
 
-                // if (userID.owner === true){
+                if (userID.owner === true){
 
-                //     const cadastroDel = await infoCadastro.findByIdAndRemove(req.params.id)
-                //     res.send(cadastroDel);
+                     const cadastroDel = await infoCadastro.findByIdAndRemove(req.params.id)
+                     return res.send(cadastroDel);
 
-                // } else {
+                }
 
-                // if(user.admin === true) return res.status(401).json({ msg: "Você não pode apagar uma conta Admin sem ser um proprietário!!"})
+                if(userID.id === user.id){
+                    const cadastroDel = await infoCadastro.findByIdAndRemove(req.user.id)
+                    return res.send(cadastroDel);
+                }
 
+                if(userID.admin === true && user.admin === true || user.owner === true) return res.json({ msg: "Apenas o owner pode apagar uma conta Owner ou Admin!!"})
 
-               const cadastroDel = await infoCadastro.findByIdAndRemove(req.params.id)
-               res.send(cadastroDel);
+                const cadastroDel = await infoCadastro.findByIdAndRemove(req.params.id)
+                res.send(cadastroDel);
 
             
 
@@ -255,17 +255,28 @@ const cadastroController = {
                 
                 else{
 
+                    if(userID.id === user.id){
+                        let { email } = req.body
+                        email = email.toLowerCase()
+
+                    const cadastroPut = await infoCadastro.findByIdAndUpdate(req.params.id, {
+                        email: email,
+                        senha: await bcrypt.hash(req.body.senha, 10),
+                   })
+                   return res.send(cadastroPut);
+
+                    }
+
                     if(user.admin === true) return res.status(401).json({ msg: "Você não pode atualizar uma conta Admin sem ser um proprietário!!"})
+
                     let { email } = req.body
                     email = email.toLowerCase()
 
                 const cadastroPut = await infoCadastro.findByIdAndUpdate(req.params.id, {
                     email: email,
                     senha: await bcrypt.hash(req.body.senha, 10),
-                    admin: false,
-                    owner: false,
                    })
-                   res.send(cadastroPut);
+                   return res.send(cadastroPut);
                 }
             }
         
