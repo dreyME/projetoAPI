@@ -162,6 +162,15 @@ const cadastroController = {
 
         findOneById: async(req, res) => {
             try {
+
+                if(!req.user.admin === true && !req.user.owner === true){
+                    req.params.id = req.user.id
+
+                    const cadastroGet = await infoCadastro.findOne({ _id: req.params.id})
+                   return res.send(cadastroGet)
+
+                }
+
                const cadastroGet = await infoCadastro.findOne({ _id: req.params.id})
                res.send(cadastroGet)
     
