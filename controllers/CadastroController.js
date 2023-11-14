@@ -75,9 +75,7 @@ const cadastroController = {
 
             if (req.user.owner === true) {
 
-                if(req.body.cnfsenha != req.body.senha){
-                    return res.status(400).json({ msg: 'As senhas não coincidem!! ' })
-                }
+                if(req.body.cnfsenha != req.body.senha) return res.status(400).json({ msg: 'As senhas não coincidem!! ' })
     
                 const cadastro = new infoCadastro({
                     id: req.params.id,
@@ -97,9 +95,8 @@ const cadastroController = {
             if(!req.user.admin === true) return res.status(401).json({ msg: "Você não tem permissão para realizar esta ação" })
 
 
-            if(req.body.cnfsenha != req.body.senha){
-                return res.status(400).json({ msg: 'As senhas não coincidem!! ' })
-            }
+            if(req.body.cnfsenha != req.body.senha) return res.status(400).json({ msg: 'As senhas não coincidem!! ' })
+            
 
             const cadastro = new infoCadastro({
                 id: req.params.id,
@@ -126,10 +123,8 @@ const cadastroController = {
         create: async(req, res) => {
             try {
                
-                if(req.body.cnfsenha != req.body.senha){
-                    return res.status(400).json({ msg: 'As senhas não coincidem!! ' })
-                }
-
+                if(req.body.cnfsenha != req.body.senha) return res.status(400).json({ msg: 'As senhas não coincidem!! ' })
+                
                 const cadastro = new infoCadastro({
                     id: req.params.id,
                     email: req.body.email,
@@ -218,7 +213,6 @@ const cadastroController = {
                req.params.id = req.user.id 
 
                
-               
                let { email } = req.body
 
                email = email.toLowerCase();
@@ -280,12 +274,6 @@ const cadastroController = {
                 }
             }
         
-            
-
-            //CRIAR UM IF DEPOIS DESSE ELSE AÍ DE CIMA
-            
-            
-
             } catch (error) {
                 res.status(500).json({ error: error.message })
                 console.log(error);

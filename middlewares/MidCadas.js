@@ -27,13 +27,13 @@ exports.loginValidate = [
 exports.adminValidate = [
   body('email').isEmail().notEmpty(),
   body('senha').isStrongPassword(),
-  body('admin').isBoolean().withMessage('Apenas aceita se o valor for booleano')
+ // body('admin').isBoolean().withMessage('Apenas aceita se o valor for booleano')
 ]
 
 exports.ownerValidate = [
   body('email').isEmail().notEmpty(),
   body('senha').isStrongPassword(),
-  body('admin').isBoolean().optional().withMessage('Apenas aceita se o valor for booleano'),
+  body('admin').isBoolean().optional().withMessage('Admin ta dando BO'),
   body('owner').isBoolean().optional().withMessage('Owner ta dando BO')
 ]
 
